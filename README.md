@@ -692,3 +692,276 @@ Required
 Install NeoVim v0.8: `brew install neovim`
 
 Checking neovim: `nvim --version`
+
+Config directory
+
+- `.config/`
+  - `nvim/`
+    - `init.lua`
+    - `lua/`
+      - `[you name]/`
+        - `core/`
+          - `colorscheme.lua`
+          - `options.lua`
+          - `keymaps.lua`
+        - `plugins/`
+          - `lualine.lua`
+          - `telescope.lua`
+          - `vim-tree.lua`
+          - `...`
+        - `plugins-setup.lua`
+
+## Basic options & settings
+
+Import core files to `init.lua`
+
+```lua
+require('lua.dalatcoder.core.options')
+require('lua.dalatcoder.core.keymaps')
+require('lua.dalatcoder.core.colorscheme')
+```
+
+Add some options in `lua.dalatcoder.core.options`
+
+```lua
+-- opt table ref
+local opt = vim.opt
+
+-- line numbers
+opt.relativenumber = true
+opt.number = true
+
+-- tabs & indentation
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.autoindent = true
+
+-- line wrapping
+opt.wrap = false
+
+-- search settings
+opt.ignorecase = true
+opt.smartcase = true
+
+-- cursor line
+opt.cursorline = true
+
+-- appearance
+opt.termguicolors = true
+opt.background = "dark"
+opt.signcolumn = "yes"
+
+-- backspace
+opt.backspace = "indent,eol,start"
+
+-- clipboard
+opt.clipboard:append("unnamedplus")
+
+-- split windows
+opt.splitright = true
+opt.splitbelow = true
+
+-- daw include -
+opt.iskeyword:append("-")
+```
+
+Packer Plugin Manager
+
+Require in `init.lua`
+
+```lua
+require('lua.dalatcoder.plugins-setup')
+require('lua.dalatcoder.core.options')
+require('lua.dalatcoder.core.keymaps')
+require('lua.dalatcoder.core.colorscheme')
+```
+
+Setup `packer` in `lua.dalatcoder.plugins-setup`
+
+```lua
+-- auto install packer if not installed
+local ensure_packer = function()
+  local fn = vim.fn
+  local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
+  if fn.empty(fn.glob(install_path)) > 0 then
+    fn.system({ "git", "clone", "--depth", "1", "https://github.com/wbthomason/packer.nvim", install_path })
+    vim.cmd([[packadd packer.nvim]])
+    return true
+  end
+  return false
+end
+local packer_bootstrap = ensure_packer() -- true if packer was just installed
+
+-- autocommand that reloads neovim and installs/updates/removes plugins
+-- when file is saved
+vim.cmd([[
+  augroup packer_user_config
+    autocmd!
+    autocmd BufWritePost plugins-setup.lua source <afile> | PackerSync
+  augroup end
+]])
+
+-- import packer safely
+local status, packer = pcall(require, "packer")
+if not status then
+  return
+end
+
+-- add list of plugins to install
+return packer.startup(function(use)
+  -- packer can manage itself
+  use("wbthomason/packer.nvim")
+
+  use("bluz71/vim-nightfly-guicolors") -- preferred colorscheme
+
+  if packer_bootstrap then
+    require("packer").sync()
+  end
+end)
+```
+
+Configure colorscheme in `lua.dalatcoder.core.colorscheme`
+
+```lua
+vim.cmd("colorscheme nightfly")
+```
+
+But, to be safety, we can check before active the theme
+
+```lua
+-- set colorscheme to nightfly with protected call
+-- in case it isn't installed
+local status, _ = pcall(vim.cmd, "colorscheme nightfly")
+
+if not status then
+  print("Colorscheme not found!") -- print error if colorscheme not installed
+  return
+end
+```
+
+Custom keymaps in `lua.dalatcoder.core.keymaps`
+
+```lua
+-- set leader key to space
+vim.g.mapleader = " "
+
+-- set key in insert mode
+-- use jk to exit insert mode
+keymap.set("i", "jk", "<ESC>")
+
+-- set key in normal mode
+-- clear search highlights
+keymap.set("n", "<leader>nh", ":nohl<CR>")
+```
+
+Window related plugins:
+
+- `vim-tmux-navigator`: uses `Ctr-h,j,k,l` to move between
+  windows and tmux
+
+- `vim-maximizer`: maximize splits and restore them back to their
+  original size
+
+Essential plugins
+
+- `vim-surround`
+- `ReplaceWithRegister`
+- `Comment.nvim`
+
+Comment plugin
+
+- Create plugin config file at: `dalatcoder.plugins.comment.lua`
+
+```lua
+-- import comment plugin safely
+local setup, comment = pcall(require, "Comment")
+if not setup then
+  return
+end
+
+-- enable comment
+comment.setup()
+```
+
+Import config file in `init.lua`
+
+```lua
+-- plugin configurations
+require("dalatcoder.plugins.comment")
+```
+
+Use cases:
+
+- Comment current line: `gcc`
+- Comment 5 lines below: `gc5j`
+
+Plenary plugin includes lua functions that many plugins use
+
+File explorer with `nvim-tree`
+
+- Config plugin at `dalatcoder.plugins.nvim-tree.lua`
+- Import plugin config file at `init.lua`
+- Create keymap to open/close quickier at `dalatcoder.core.keymaps`
+
+VScode Like Icons with `nvim-web-devicons`
+
+Config status line with `lualine.nvim`
+
+- Config plugin at `dalatcoder.plugins.lualine.lua`
+- Import plugin config file at `init.lua`
+
+Config Telescope Fuzzy Finder
+
+- Install `ripgrep`: `brew install ripgrep`
+- Add plugin `telescope-fzf-native`
+- Add plugin `telescope.nvim`
+- Config plugin at `dalatcoder.plugins.telescope.lua`
+- Import plugin config file at `init.lua`
+- Create keymap to active telescope at `dalatcoder.core.keymaps`
+
+Setup basic autocompletion
+
+- Add plugin `nvim-cmp`: autocompletion
+- Add plugin `cmp-buffer`: recommend text from current buffer
+- Add plugin `cmp-path`: recommend file path
+- Add plugin `LuaSnip`: snippet engine
+- Add plugin `cmp_luasnip`: recommend snippets
+- Add plugin `friendly-snippets`: collections of useful snippets
+- Config plugin at `dalatcoder.plugins.nvim-cmp.lua`
+- Import plugin config file at `init.lua`
+
+Configuring LSP - Language Server Protocol, it'll give us the
+ability to have really smart auto code completion and also
+the ability to perform code actions to fix problems in our code.
+
+Add plugins for managing and installing LSP servers
+
+- Add `mason.nvim` plugin, use this plugin as the source of truth
+  to manage LSP servers
+- LSP is built into neovim but the LSP servers themselves need to
+  be installed
+- Add `nvim-lspconfig` for configuring LSP servers
+- Add `mason-lspconfig` as an adapter between `mason` and `lspconfig` plugins
+- Add `cmp-nvim-lsp` config LSP servers so that they appear in
+  Auto Completion
+- `lspsaga.nvim` will add enhanced UI to our LSP experience
+- `typescript.nvim` to add more functionality to the TS server
+- `lspkind.nvim` add vscode like icons to our Auto Completion
+- Create all related config files at `dalatcoder.plugins.lsp`
+  - `lsp.mason.lua`
+  - `lspconfig.lua` for configuring all LSP servers
+  - `lspsaga.lua` for configuring LSP Saga
+- Import plugin config file at `init.lua`
+
+Open neovim, press command `:Mason` to install `LSP` servers
+
+Formating and Linting
+
+- Add `null-ls.nvim`: used to config formatter and linter
+- Add `mason-null-ls.nvim`: adapter
+- Config plugin at `dalatcoder.plugins.lsp.null-ls`
+
+Highlighting with TreeSitter `nvim-treesitter`
+
+Auto closing with `nvim-autopairs` and `nvim-ts-autotag`
