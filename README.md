@@ -965,3 +965,85 @@ Formating and Linting
 Highlighting with TreeSitter `nvim-treesitter`
 
 Auto closing with `nvim-autopairs` and `nvim-ts-autotag`
+
+Setup LSP for Python:
+
+- Install `PyLSP`
+- Install dependencies: `:PylspInstall pyls-flake8 pylsp-mypy pyls-isort`
+
+## Setup Tmux
+
+Tmux is what is known as terminal multiplexer which gives us
+the ability to manage sessions, windows and panes inside the
+terminal
+
+- Install tmux with: `brew install tmux`
+- Check installation with: `tmux -V`
+- Create config file at: `~/.tmux.conf`
+
+Working with sessions
+
+- Create new session: `tmux new -s Session`
+- Exit session: `tmux detach`
+- Get session list: `tmux ls`
+- Open existing session: `tmux attach -t Session`
+- Kill existing session: `tmux kill-session -t Session`
+
+Inside a tmux session, we can use `C-a s` to list session and navigate between sessions with `j` and `k`
+
+In each session, you will have
+
+- `window`
+- `pane`
+
+A window is basically a collection of split panes.
+
+Create new split panes
+
+- Vertical: `C-a %`, remap to `C-a |`
+- Horizontal: `C-a '`, remap to `C-a -`
+
+Resize panes
+
+- `j`
+- `k`
+- `l`
+- `h`
+
+Using `m` key to maximize a tmux pane
+
+Config plugin to navigate between tmux pane
+
+- Install `TPM` - Tmux Plugin Manager
+- `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
+- Using plugin `vim-tmux-navigator`
+- To install plugins, press `C-a I`
+
+We can use this plugin to navigate between tmux panes and neovim
+
+Working with Windows in Tmux
+
+- `C-a c`
+- Navigate between window `C-a [number]`
+- Rename window with `C-a ,`
+- Also navigate with `C-a n` or `C-a p`
+- List all windows with `C-a w`
+
+Use cases
+
+- Backend project on a single window
+- Front project on a seperated window
+- Several panes in each window for writing codes and running things
+- Maximize code pane with `C-a m`
+
+Configuring Vim Movements within tmux
+
+- Enable copy/vi mode `C-a [`
+- Use `h`, `j`, `k`, `l` to move or `J`, `K`
+- Use `C-D`, `C-U`
+- Copy with `v` and `y` or using mouse
+- To exit copy/vi mode `C-c`
+
+Adding theme
+
+Add some more plugins to save tmux session
